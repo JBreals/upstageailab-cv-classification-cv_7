@@ -14,6 +14,7 @@ if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
     
 from omegaconf import DictConfig
+from src.dataset.dataset_onehot import DocumentDataset_onehot
 from src.dataset.dataset import DocumentDataset
 from src.dataset.testdataset import TestDataset
 from src.dataset.analyzedataset import AnalyzeDataset
@@ -106,15 +107,15 @@ class DocumentDataModule(pl.LightningDataModule):
             train_df = self.df_aug[self.df_aug["train"] == 1]
             val_df = self.df_aug[self.df_aug["train"] == 0]
             
-            train_dataset_rotation = DocumentDataset(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_rotation)
-            train_dataset_gaussNoise = DocumentDataset(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_gaussNoise)
-            train_dataset_blur = DocumentDataset(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_blur)
-            train_dataset_brightness = DocumentDataset(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_brightness)
+            train_dataset_rotation = DocumentDataset_onehot(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_rotation)
+            train_dataset_gaussNoise = DocumentDataset_onehot(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_gaussNoise)
+            train_dataset_blur = DocumentDataset_onehot(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_blur)
+            train_dataset_brightness = DocumentDataset_onehot(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_brightness)
             # train_dataset_img_comp = DocumentDataset(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_img_comp)
-            train_dataset_coarse_dropout = DocumentDataset(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_coarse_dropout)
-            train_dataset_grid_dropout = DocumentDataset(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_grid_dropout)
-            train_dataset_grid_dropout_horizontal_flip = DocumentDataset(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_grid_dropout_horizontal_flip)
-            train_dataset_grid_dropout_vertical_flip = DocumentDataset(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_grid_dropout_vertical_flip)
+            train_dataset_coarse_dropout = DocumentDataset_onehot(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_coarse_dropout)
+            train_dataset_grid_dropout = DocumentDataset_onehot(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_grid_dropout)
+            train_dataset_grid_dropout_horizontal_flip = DocumentDataset_onehot(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_grid_dropout_horizontal_flip)
+            train_dataset_grid_dropout_vertical_flip = DocumentDataset_onehot(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_grid_dropout_vertical_flip)
             # self.train_dataset_custom = DocumentDataset(train_df, self.data_dir, aug_pipeline=None, transform=self.transform_custom)
             self.train_dataset = torch.utils.data.ConcatDataset([train_dataset_rotation, train_dataset_gaussNoise, train_dataset_blur, train_dataset_brightness, train_dataset_coarse_dropout, train_dataset_grid_dropout, train_dataset_grid_dropout_horizontal_flip, train_dataset_grid_dropout_vertical_flip])
             

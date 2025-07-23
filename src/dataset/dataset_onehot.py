@@ -3,8 +3,10 @@ from torch.utils.data import Dataset
 import os
 import random
 import numpy as np
+import torch.nn.functional as F
+import torch
 
-class DocumentDataset(Dataset):
+class DocumentDataset_onehot(Dataset):
     def __init__(self, df_subset, data_dir, aug_pipeline=None, transform=None):
         self.df = df_subset
         self.data_dir = data_dir
@@ -17,6 +19,7 @@ class DocumentDataset(Dataset):
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
         img_name, label = row["ID"], row["target"]
+        one_hot = F.one_hot(torch.tensor(label), num_classes=17).float()
         img_path = os.path.join(self.data_dir, "train", img_name)
 
         image = Image.open(img_path).convert("RGB")
@@ -36,4 +39,4 @@ class DocumentDataset(Dataset):
                 image = image['image'] 
         
 
-        return image, label
+        return image, one_hot

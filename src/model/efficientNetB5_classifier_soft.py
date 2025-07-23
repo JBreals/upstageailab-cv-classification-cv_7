@@ -4,8 +4,6 @@ import torch.nn.functional as F
 import torch.nn as nn
 import timm
 
-from torchinfo import summary
-from torchview import draw_graph
 
 import hydra
 from hydra.utils import instantiate
@@ -13,7 +11,7 @@ import os
 import sys
 
 from torchmetrics.classification import F1Score
-
+from torch.optim.lr_scheduler import CosineAnnealingLR
 # 현재 파일 기준으로 프로젝트 루트 경로 찾기
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 if ROOT_DIR not in sys.path:
@@ -58,37 +56,21 @@ class EfficientNetB5Classifier(pl.LightningModule):
         return self.model(x)
 
     def training_step(self, batch, batch_idx):
-        # x, y = batch
-        # logits = self(x)
-        # loss = F.cross_entropy(logits, y)
-        # acc = (logits.argmax(dim=1) == y).float().mean()
-        # preds = logits.argmax(dim=1)
+        images, soft_labels, modes = batch
+        logits = self(images)
+        log_probs = F.log_softmax(logits, dim=1)
+        loss = F.kl_div(log_probs, soft_labels, reduction='batchmean')
 
+        preds = logits.argmax(dim=1)
+        targets = soft_labels.argmax(dim=1)  # soft → hard
 
-        # #F1 누적
-        # self.train_f1.update(preds, y)
+        acc = (preds == targets).float().mean()
 
-        # self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
-        # self.log("train/acc", acc, prog_bar=True, on_step=True, on_epoch=True)
-
-        # return loss
-
-        images, y_a, y_b, lam, mode = batch #batch 구조를 collate_fn함수 기준으로 맞춰줌.
-        logits = self(images)   #모델에 이미지 넣어 예측값 얻음
-        if mode in ['mixup', 'cutmix']: #mixup/cutmix 증강이 적용된 경우, 가중 평균 방식으로 loss 계산
-            loss = lam * F.cross_entropy(logits, y_a) + (1 - lam) * F.cross_entropy(logits, y_b)
-            #acc,f1 계산은 y_a (섞기 전 라벨) 기준으로 계산 (주로 이렇게 실험)
-            preds = logits.argmax(dim=1)
-            acc = (preds == y_a).float().mean()
-            self.train_f1.update(preds, y_a)
-        else:   #일반케이스(none)일 경우, 이전 방식과 동일하게 동작.
-            loss = F.cross_entropy(logits, y_a)
-            preds = logits.argmax(dim=1)
-            acc = (preds == y_a).float().mean()
-            self.train_f1.update(preds, y_a)
+        self.train_f1.update(preds, targets)
             
         self.log("train/loss", loss, prog_bar=True, on_step=True, on_epoch=True)
         self.log("train/acc", acc, prog_bar=True, on_step=True, on_epoch=True)
+        return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
@@ -134,12 +116,7 @@ class EfficientNetB5Classifier(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
-        scheduler = {
-          "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=1, factor=0.5, verbose=True),
-          "monitor": "val/f1",
-          "frequency": 1,
-          "interval": "epoch",
-        }
+        scheduler = CosineAnnealingLR(optimizer, T_max=50)
 
         return {"optimizer": optimizer, "lr_scheduler": scheduler}
 

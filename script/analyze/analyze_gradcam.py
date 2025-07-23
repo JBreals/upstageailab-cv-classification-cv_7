@@ -14,7 +14,7 @@ if ROOT_DIR not in sys.path:
 
 from torch.utils.data import DataLoader
 
-def analyze_gradcam(model, dm, fold):
+def analyze_gradcam(model, dm, fold=0):
   pred_list = defaultdict(lambda: {"img_name": [], "img": [], "pred": [], "label": []})
 
   dm.setup("analyze")
@@ -61,5 +61,5 @@ def analyze_gradcam(model, dm, fold):
 
   
   
-  return correct_dict, incorrect_dict
+  return df, correct_dict, incorrect_dict
   

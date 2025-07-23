@@ -62,6 +62,16 @@ def get_transform_shadow(shadow_roi=(0, 0, 1, 1), num_shadows_limit=(1, 3), shad
           ),
     ])
 
+def get_horizontal_flip(p=1.0):
+    return A.Compose([
+        A.HorizontalFlip(p=p),
+    ])
+
+def get_vertical_flip(p=1.0):
+    return A.Compose([
+        A.VerticalFlip(p=p),
+    ])
+
 def get_transform_coarse_dropout(num_holes_range=[1, 2], hole_height_range=[0.1, 0.2], hole_width_range=[0.1, 0.12], fill=0, p=0.8):
     return A.Compose([
         A.CoarseDropout(
@@ -71,6 +81,15 @@ def get_transform_coarse_dropout(num_holes_range=[1, 2], hole_height_range=[0.1,
             fill=fill,
             p=p
         )
+    ])
+
+def get_grid_dropout(ratio=0.5,
+                    random_offset=True,
+                    shift_xy=[0, 0],
+                    fill=0,
+                    p=0.8):
+    return A.Compose([
+        A.GridDropout(ratio=ratio, random_offset=random_offset, shift_xy=shift_xy, fill=fill, p=p)
     ])
 
 def get_transform_img_comp(compression_type='jpeg', quality_range=(20, 40), p=0.8):

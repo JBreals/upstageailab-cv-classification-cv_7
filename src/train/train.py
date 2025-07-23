@@ -16,7 +16,7 @@ if ROOT_DIR not in sys.path:
 from omegaconf import OmegaConf
 from pytorch_lightning import Trainer
 from hydra.utils import instantiate
-from src.dataset.datamodule_cutmix import DocumentDataModule
+from src.dataset.datamodule_onehot import DocumentDataModule
 
 @hydra.main(config_path="../../configs", config_name="config")
 def train(cfg):

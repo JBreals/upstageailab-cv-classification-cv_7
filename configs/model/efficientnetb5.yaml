@@ -1,5 +1,5 @@
 _target_: src.model.efficientNetB5_classifier.EfficientNetB5Classifier
-lr: 5e-3
-weight_decay: 1e-2
+lr: 1e-4
+weight_decay: 1e-3
 num_classes: 17
 name: efficientnetb5

@@ -35,14 +35,12 @@ def train(cfg):
 
     # kfold csv 없을 시 실행
     if not os.path.exists(cfg.data.fold_path):
-        os.makedirs(os.path.dirname(cfg.data.fold_path), exist_ok=True)
-        train_csv_path = os.path.join(ROOT_DIR, "data", "train.csv")
-        df = make_stratified_kfold(pd.read_csv(train_csv_path), n_splits=cfg.data.num_folds, seed=42)
+        df = make_stratified_kfold(pd.read_csv(f"{ROOT_DIR}/data/train.csv"), n_splits=cfg.data.num_folds, seed=42)
         df.to_csv(cfg.data.fold_path, index=False)
 
     for fold in range(cfg.data.num_folds):
         start_time = time.time()
-        
+
         wandb_logger = WandbLogger(
             project=cfg.wandb.project,
             entity=cfg.wandb.entity,

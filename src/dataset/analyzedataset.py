@@ -14,7 +14,8 @@ class AnalyzeDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
-        img_name, label = self.df[idx]
+        row = self.df.iloc[idx]
+        img_name, label = row["ID"], row["target"]
         img_path = os.path.join(self.data_dir, "train", img_name)
         image = Image.open(img_path).convert("RGB")
         image = np.array(image)
